@@ -237,24 +237,38 @@ comme positions de sommets, vous devriez voir quelque chose de semblable à ça 
 
 ![résultat attendu Tutte à plat](img/tutte_flat.png)
 
+### Least Squares Conformal Maps
+
+La paramétrisation de Tutte crée beaucoup de distorsion entre l'espace texture
+et l'espace 3D. Votre but maintenant est d'implémenter la méthode de
+paramétrisation LSCM 
+[évoquée en
+cours](https://perso.liris.cnrs.fr/vincent.nivoliers/cgdi/documents/notebooks/lscm.html).
+
+#### Gestion du bord
+
+Pour cette méthode, vous n'aurez pas besoin de fixer le bord sur un cercle, vous
+n'aurez qu'à fixer les coordonnées texture de deux sommets. Nous vous proposons
+de sélectionner le point du maillage ayant la coordonnée y maximale et de le
+placer dans l'espace texture en $(0.5,0.8)$, et le point ayant la coordonnée en
+y minimale et de le placer en $(0.5,0.2)$. Le reste des sommets reste libre, et
+vous avez donc $2(n-2)$ variables.
+
+#### Construction du système
+
+Le système contiendra deux équations par triangle du maillage, ce qui fait plus
+d'équations que d'inconnues. Votre matrice sera donc rectangulaire et aura plus
+de lignes que de colonnes. La méthode utilisera donc une résolution aux moindres
+carrés, qui est également implémentée dans `Eigen` en utilisant le solveur
+`Eigen::LeastSquaresConjugateGradient`. Ce solveur prend dont en entrée
+directement la matrice rectangulaire, pas besoin de multiplier par la transposée
+comme fait en cours.
+
 
 ## À vous de jouer
 
 Pour ce projet, à vous d'aller plus loin ensuite. Nous vous proposons quelques
 idées.
-
-### Least Squares Conformal Maps
-
-Implémentez la paramétrisation suivant la méthode LSCM 
-[évoquée en
-cours](https://perso.liris.cnrs.fr/vincent.nivoliers/cgdi/documents/notebooks/lscm.html).
-Pour cette méthode, vous n'aurez pas besoin de fixer le bord sur un cercle, vous
-n'aurez qu'à fixer les coordonnées texture de deux sommets. Par contre le
-système contiendra deux équations par triangle du maillage, ce qui fait plus
-d'équations que d'inconnues. Votre matrice sera donc rectangulaire et aura plus
-de lignes que de colonnes. La méthode utiliser donc une résolution aux moindres
-carrés, qui est également implémentée dans `Eigen` en utilisant le solveur 
-`Eigen::LeastSquaresConjugateGradient`.
 
 ### Lancer de tomates
 
