@@ -26,4 +26,29 @@ void Tutte::printEdgeSet() {
   for (const edge& e : cutEdgeSet) {
     std::cout << "(" << e.first << ", " << e.second << ")" << std::endl;
   }
+  std::cout << "Nombre d'arêtes: " << cutEdgeSet.size() << std::endl;
+}
+
+void Tutte::buildEdgeMap() {
+  /*
+  auto it = cutEdgeSet.begin();
+  const edge firstEdge = *it;
+  std::cout << "(" << firstEdge.first << ", " << firstEdge.second << ")" << std::endl;
+
+  cutEdgeMap[firstEdge.first] = firstEdge.second;
+
+  while (it->second != firstEdge.first) {
+    it = cutEdgeSet.lower_bound(std::make_pair(it->first, 0U));
+    cutEdgeMap[it->first] = it->second;
+  }
+  */
+  for (const edge& e : cutEdgeSet) {
+    cutEdgeMap[e.first] = e.second;
+  }
+}
+
+void Tutte::printEdgeMap() {
+  for (const auto& [key, value] : cutEdgeMap) {
+    std::cout << key << ": " << value << std::endl;
+  }
 }

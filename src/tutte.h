@@ -14,4 +14,7 @@ class Tutte {
   Tutte() = default;
   void buildEdgeSet(const MeshIOData& data);
   void printEdgeSet();
+
+  void buildEdgeMap();
+  void printEdgeMap();
 };

@@ -37,6 +37,8 @@ bool init() {
 
   tutte.buildEdgeSet(data);
   tutte.printEdgeSet();
+  tutte.buildEdgeMap();
+  tutte.printEdgeMap();
 
   vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
   /* ou
