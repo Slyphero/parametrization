@@ -36,7 +36,7 @@ bool init() {
   default_texture(0, texture);
 
   tutte.buildEdgeSet(data);
-  std::cout << tutte.cutEdgeSet << std::endl;
+  tutte.printEdgeSet();
 
   vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
   /* ou
