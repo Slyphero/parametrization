@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+const double PI = 3.14159265358979323846;
+
 void Tutte::buildEdgeSet(const MeshIOData& data) {
   unsigned int indicesCount = data.indices.size();
 
@@ -50,5 +52,22 @@ void Tutte::buildEdgeMap() {
 void Tutte::printEdgeMap() {
   for (const auto& [key, value] : cutEdgeMap) {
     std::cout << key << ": " << value << std::endl;
+  }
+}
+
+void Tutte::buildEdgePos(const MeshIOData& data) {
+  int k = cutEdgeMap.size();
+  int currentKey = 0;
+  edgePointPos.clear();
+  edgePointPos.resize(data.indices.size(), Point(0., 0., 0.));
+  for (int i = 0; i < k; ++i) {
+    edgePointPos[currentKey] = Point(cos((2. * PI * i) / k), sin((2. * PI * i) / k), 0.);
+    currentKey = cutEdgeMap[currentKey];
+  }
+}
+
+void Tutte::printEdgePos() {
+  for (Point p : edgePointPos) {
+    std::cout << "(" << p.x << ", " << p.y << ")" << std::endl;
   }
 }
