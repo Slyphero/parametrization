@@ -42,7 +42,10 @@ void Tutte::printEdgeMap() {
   int first = cutEdgeMap.begin()->first;
   int current = first;
   while (cutEdgeMap[current] != first) {
+    std::cout << current << " -> ";
+    current = cutEdgeMap[current];
   }
+  std::cout << first << std::endl;
 }
 
 void Tutte::buildEdgePos(const MeshIOData& data) {
