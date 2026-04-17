@@ -40,10 +40,12 @@ bool init() {
   tutte.buildEdgeMap();
   tutte.printEdgeMap();
   tutte.buildEdgePos(data);
-  // tutte.printEdgePos();
-  // tutte.calculNeighbors(data);
+  tutte.calculNeighbors(data);
+  tutte.buildInsidePos(data);
+  tutte.printEdgePos();
 
-  vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
+  // vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
+  vao = create_buffers(tutte.edgePointPos, data.indices);
   /* ou
       vao= create_buffers(data.positions, data.indices, data.texcoords,
      data.normals); mais s'il y a des coordonn�es de textures dans l'objet, il
@@ -65,6 +67,7 @@ void draw() {
   Transform view = Translation(0, 0, zoomFactor);  // camera
   Transform projection = Perspective(45, 1024.0 / 576.0, 0.1, 100);
 
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   draw(vao, GL_TRIANGLES, count, model, view, projection);
 }
 
