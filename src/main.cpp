@@ -41,6 +41,7 @@ bool init() {
   // tutte.printEdgeMap();
   tutte.buildEdgePos(data);
   tutte.printEdgePos();
+  // tutte.calculNeighbors(data);
 
   vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
   /* ou

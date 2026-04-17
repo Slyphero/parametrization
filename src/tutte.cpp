@@ -17,6 +17,7 @@ void Tutte::buildEdgeSet(const MeshIOData& data) {
 
       if (cutEdgeSet.contains(invertedEdge)) {
         cutEdgeSet.erase(cutEdgeSet.find(invertedEdge));
+        notCutEdgeSet.insert(edgeArray[j]);
       } else {
         cutEdgeSet.insert(edgeArray[j]);
       }
@@ -32,34 +33,23 @@ void Tutte::printEdgeSet() {
 }
 
 void Tutte::buildEdgeMap() {
-  /*
-  auto it = cutEdgeSet.begin();
-  const edge firstEdge = *it;
-  std::cout << "(" << firstEdge.first << ", " << firstEdge.second << ")" << std::endl;
-
-  cutEdgeMap[firstEdge.first] = firstEdge.second;
-
-  while (it->second != firstEdge.first) {
-    it = cutEdgeSet.lower_bound(std::make_pair(it->first, 0U));
-    cutEdgeMap[it->first] = it->second;
-  }
-  */
   for (const edge& e : cutEdgeSet) {
     cutEdgeMap[e.first] = e.second;
   }
 }
 
 void Tutte::printEdgeMap() {
-  for (const auto& [key, value] : cutEdgeMap) {
-    std::cout << key << ": " << value << std::endl;
+  int first = cutEdgeMap.begin()->first;
+  int current = first;
+  while (cutEdgeMap[current] != first) {
   }
 }
 
 void Tutte::buildEdgePos(const MeshIOData& data) {
   int k = cutEdgeMap.size();
-  int currentKey = 0;
+  int currentKey = cutEdgeMap.begin()->first;
   edgePointPos.clear();
-  edgePointPos.resize(data.indices.size(), Point(0., 0., 0.));
+  edgePointPos.resize(data.positions.size(), Point(0., 0., 0.));
   for (int i = 0; i < k; ++i) {
     edgePointPos[currentKey] = Point(cos((2. * PI * i) / k), sin((2. * PI * i) / k), 0.);
     currentKey = cutEdgeMap[currentKey];
@@ -70,4 +60,29 @@ void Tutte::printEdgePos() {
   for (Point p : edgePointPos) {
     std::cout << "(" << p.x << ", " << p.y << ")" << std::endl;
   }
+}
+
+void Tutte::calculNeighbors(const MeshIOData &data) {
+  numberNeighbor.resize(data.positions.size(), 0);
+
+  for (const edge& e : notCutEdgeSet) {
+    numberNeighbor[e.first] += 1;
+    numberNeighbor[e.second] += 1;
+  }
+}
+
+void Tutte::printNeighbors() {
+  for (int i = 0; i < numberNeighbor.size(); ++i) {
+    std::cout << "(" << numberNeighbor[i] << ", " << i << ")" << std::endl;
+  }
+}
+
+void Tutte::buildInsidePos(const MeshIOData &data) {
+  std::vector<Eigen::Triplet<float>> coefficients ;
+  // std::set<edge> allEdgeSet = cutEdgeSet+notCutEdgeSet;
+  // for (const edge& e : allEdgeSet) {
+  //   coefficients.emplace_back(e.first);
+  // }
+  coefficients.emplace_back(0,2,0.25) ;
+  coefficients.emplace_back(1,3,0.25) ;
 }
