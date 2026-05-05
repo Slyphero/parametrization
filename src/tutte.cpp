@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <Eigen/SparseCholesky>
 
 const double PI = 3.14159265358979323846;
 
@@ -85,9 +86,15 @@ void Tutte::buildInsidePos(const MeshIOData &data) {
   int index = 0;
   systemsLinesIndicesMap.clear();
 
-  // 1. Renumber interior vertices
+  // 1. Build boundary vertex set
+  std::set<unsigned int> boundaryVertices;
+  for (const auto& kv : cutEdgeMap) {
+    boundaryVertices.insert(kv.first);
+  }
+
+  // Renumber interior vertices
   for (int i = 0; i < data.positions.size(); ++i) {
-    if (cutEdgeMap.find(i) == cutEdgeMap.end()) {
+    if (boundaryVertices.find(i) == boundaryVertices.end()) {
       systemsLinesIndicesMap[i] = index;
       index++;
     }
@@ -96,8 +103,8 @@ void Tutte::buildInsidePos(const MeshIOData &data) {
   int n = systemsLinesIndicesMap.size();
 
   // 2. Prepare system
-  std::vector<Eigen::Triplet<float>> coefficients;
-  Eigen::VectorXf rhs(2 * n);
+  std::vector<Eigen::Triplet<double>> coefficients;
+  Eigen::VectorXd rhs(2 * n);
   rhs.setZero();
 
   // Build adjacency list
@@ -120,33 +127,41 @@ void Tutte::buildInsidePos(const MeshIOData &data) {
     int rowY = 2 * idx + 1;
 
     int deg = neighbors[vertex].size();
-    if (deg == 0) continue;
-    float w = 1.0f / static_cast<float>(deg);
+    if (deg == 0) {
+      coefficients.emplace_back(rowX, rowX, 1.0);
+      coefficients.emplace_back(rowY, rowY, 1.0);
+      continue;
+    }
 
+    // Use unnormalized Laplacian: deg * x_i - sum x_j = sum (boundary neighbors)
     // diagonal
-    coefficients.emplace_back(rowX, rowX, 1.0f);
-    coefficients.emplace_back(rowY, rowY, 1.0f);
+    coefficients.emplace_back(rowX, rowX, static_cast<double>(deg));
+    coefficients.emplace_back(rowY, rowY, static_cast<double>(deg));
 
     for (int voisin : neighbors[vertex]) {
       if (systemsLinesIndicesMap.find(voisin) != systemsLinesIndicesMap.end()) {
         int j = systemsLinesIndicesMap[voisin];
-        coefficients.emplace_back(rowX, 2 * j, -w);
-        coefficients.emplace_back(rowY, 2 * j + 1, -w);
+        coefficients.emplace_back(rowX, 2 * j, -1.0);
+        coefficients.emplace_back(rowY, 2 * j + 1, -1.0);
       } else {
-        rhs[rowX] += w * edgePointPos[voisin].x;
-        rhs[rowY] += w * edgePointPos[voisin].y;
+        rhs[rowX] += edgePointPos[voisin].x;
+        rhs[rowY] += edgePointPos[voisin].y;
       }
     }
   }
 
   // 4. Build sparse matrix
-  Eigen::SparseMatrix<float> M(2 * n, 2 * n);
+  Eigen::SparseMatrix<double> M(2 * n, 2 * n);
   M.setFromTriplets(coefficients.begin(), coefficients.end());
 
   // 5. Solve
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<float>> solver;
+  Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> solver;
   solver.compute(M);
-  Eigen::VectorXf solution = solver.solve(rhs);
+  Eigen::VectorXd solution = solver.solve(rhs);
+
+  if (solver.info() != Eigen::Success) {
+    std::cout << "Solver failed!" << std::endl;
+  }
 
   // 6. Write back solution
   for (auto& [vertex, idx] : systemsLinesIndicesMap) {
