@@ -186,7 +186,7 @@ void Tutte::buildInsidePos(const MeshIOData &data)
     M.setFromTriplets(coefficients.begin(), coefficients.end());
 
     // 5. Solve
-    Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> solver;
+    Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> solver;
     solver.compute(M);
     Eigen::VectorXd solution = solver.solve(rhs);
 
