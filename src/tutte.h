@@ -17,7 +17,6 @@ public:
     std::map<unsigned int, unsigned int> cutEdgeMap;
     std::vector<Point> edgePointPos;
 
-    std::vector<unsigned int> numberNeighbor;
     std::map<unsigned int, unsigned int> systemsLinesIndicesMap;
 
     Tutte() = default;

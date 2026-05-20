@@ -83,38 +83,18 @@ void Tutte::printEdgePos()
     }
 }
 
-void Tutte::calculNeighbors(const MeshIOData &data)
-{
-    numberNeighbor.resize(data.positions.size(), 0);
-
-    for (const edge &e : notCutEdgeSet)
-    {
-        numberNeighbor[e.first] += 1;
-        numberNeighbor[e.second] += 1;
-    }
-}
-
-void Tutte::printNeighbors()
-{
-    for (int i = 0; i < numberNeighbor.size(); ++i)
-    {
-        std::cout << "(" << numberNeighbor[i] << ", " << i << ")" << std::endl;
-    }
-}
-
 void Tutte::buildInsidePos(const MeshIOData &data)
 {
     int index = 0;
     systemsLinesIndicesMap.clear();
 
-    // 1. Build boundary vertex set
+    // Sommets du bord (donc déjà connus)
     std::set<unsigned int> boundaryVertices;
     for (const auto &kv : cutEdgeMap)
     {
         boundaryVertices.insert(kv.first);
     }
 
-    // Renumber interior vertices
     for (int i = 0; i < data.positions.size(); ++i)
     {
         if (boundaryVertices.find(i) == boundaryVertices.end())
@@ -126,12 +106,10 @@ void Tutte::buildInsidePos(const MeshIOData &data)
 
     int n = systemsLinesIndicesMap.size();
 
-    // 2. Prepare system
     std::vector<Eigen::Triplet<double>> coefficients;
     Eigen::VectorXd rhs(2 * n);
     rhs.setZero();
 
-    // Build adjacency list
     std::vector<std::vector<int>> neighbors(data.positions.size());
     std::set<edge> allEdgeSet;
     allEdgeSet.insert(cutEdgeSet.begin(), cutEdgeSet.end());
@@ -146,7 +124,6 @@ void Tutte::buildInsidePos(const MeshIOData &data)
             neighbors[e.second].push_back(e.first);
     }
 
-    // 3. Fill matrix and rhs
     for (auto &[vertex, idx] : systemsLinesIndicesMap)
     {
         int rowX = 2 * idx;
@@ -160,8 +137,6 @@ void Tutte::buildInsidePos(const MeshIOData &data)
             continue;
         }
 
-        // Use unnormalized Laplacian: deg * x_i - sum x_j = sum (boundary neighbors)
-        // diagonal
         coefficients.emplace_back(rowX, rowX, static_cast<double>(deg));
         coefficients.emplace_back(rowY, rowY, static_cast<double>(deg));
 
@@ -181,21 +156,13 @@ void Tutte::buildInsidePos(const MeshIOData &data)
         }
     }
 
-    // 4. Build sparse matrix
     Eigen::SparseMatrix<double> M(2 * n, 2 * n);
     M.setFromTriplets(coefficients.begin(), coefficients.end());
 
-    // 5. Solve
     Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> solver;
     solver.compute(M);
     Eigen::VectorXd solution = solver.solve(rhs);
 
-    if (solver.info() != Eigen::Success)
-    {
-        std::cout << "Solver failed!" << std::endl;
-    }
-
-    // 6. Write back solution
     for (auto &[vertex, idx] : systemsLinesIndicesMap)
     {
         edgePointPos[vertex].x = solution[2 * idx];
