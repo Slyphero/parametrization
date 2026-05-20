@@ -38,14 +38,10 @@ bool init()
     default_texture(0, texture);
 
     tutte.buildEdgeSet(data);
-    // tutte.printEdgeSet();
     tutte.buildEdgeMap();
-    tutte.printEdgeMap();
     tutte.buildEdgePos(data);
-    tutte.calculNeighbors(data);
     tutte.buildInsidePos(data);
-    tutte.printEdgePos();
-
+    
     // vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
     vao = create_buffers(tutte.edgePointPos, data.indices);
     /* ou
