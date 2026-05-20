@@ -6,6 +6,7 @@
 #include "default_program.h"
 #include "draw.h"
 #include "glcore.h"
+#include "LSCM.h"
 #include "mat.h"
 #include "mesh_io.h"
 #include "program.h"
@@ -24,6 +25,7 @@ float zoomFactor = -2.;
 GLuint texture;
 
 Tutte tutte;
+LSCM lscm;
 
 bool init()
 {
@@ -41,6 +43,8 @@ bool init()
     tutte.buildEdgeMap();
     tutte.buildEdgePos(data);
     tutte.buildInsidePos(data);
+
+    lscm.selectFixPoints(data);
     
     // vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
     vao = create_buffers(tutte.edgePointPos, data.indices);
