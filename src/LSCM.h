@@ -2,20 +2,25 @@
 
 #include <set>
 #include <map>
+#include <cmath>
 
 #include "mesh_io.h"
+#include "vec.h"
+#include "Eigen/Sparse"
+#include "Eigen/Dense"
 #include "typedefs.h"
 
 class LSCM {
 public:
-    std::set<edge> cutEdgeSet;
-    std::set<edge> notCutEdgeSet;
-
     std::vector<Point> PointPos;
-    std::map<unsigned int, unsigned int> systemsLinesIndicesMap;
 
     LSCM() = default;
-    void buildEdgeSet(const MeshIOData &data);
+    LSCM(const LSCM &) = delete;
+    LSCM(const LSCM &&) = delete;
+    LSCM &operator=(const LSCM &) = delete;
+    LSCM &operator=(const LSCM &&) = delete;
+    ~LSCM() = default;
+
     void selectFixPoints(const MeshIOData &data);
     void solveLSCM(const MeshIOData &data);
     int variable_index(int i);

@@ -20,6 +20,12 @@ public:
     std::map<unsigned int, unsigned int> systemsLinesIndicesMap;
 
     Tutte() = default;
+    Tutte(const Tutte &) = delete;
+    Tutte(const Tutte &&) = delete;
+    Tutte &operator=(const Tutte &) = delete;
+    Tutte &operator=(const Tutte &&) = delete;
+    ~Tutte() = default;
+
     void buildEdgeSet(const MeshIOData &data);
     void printEdgeSet();
 
