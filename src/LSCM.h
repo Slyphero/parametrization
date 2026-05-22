@@ -17,5 +17,10 @@ public:
     LSCM() = default;
     void buildEdgeSet(const MeshIOData &data);
     void selectFixPoints(const MeshIOData &data);
+    void solveLSCM(const MeshIOData &data);
+    int variable_index(int i);
+
+    int lowy;
+    int highy;
 };
 
