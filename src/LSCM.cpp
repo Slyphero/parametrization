@@ -3,8 +3,8 @@
 #include <iterator>
 
 void LSCM::selectFixPoints(const MeshIOData &data) {
-    double max_y = std::numeric_limits<double>::min();
-    double min_y = std::numeric_limits<double>::max();
+    double max_y = data.positions[0].y;
+    double min_y = data.positions[0].y;
 
     for (int i = 0; i < data.positions.size(); ++i) {
         if (data.positions[i].y < min_y) {

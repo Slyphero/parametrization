@@ -37,10 +37,10 @@ bool init() {
     }
     default_texture(0, texture);
 
-    tutte.buildEdgeSet(data);
-    tutte.buildEdgeMap();
-    tutte.buildEdgePos(data);
-    tutte.buildInsidePos(data);
+    // tutte.buildEdgeSet(data);
+    // tutte.buildEdgeMap();
+    // tutte.buildEdgePos(data);
+    // tutte.buildInsidePos(data);
 
     lscm.selectFixPoints(data);
     lscm.solveLSCM(data);
