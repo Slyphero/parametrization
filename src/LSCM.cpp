@@ -127,8 +127,8 @@ void LSCM::solveLSCM(const MeshIOData &data) {
     for (int i = 0; i < verticesCount; ++i) {
         int var = variable_index(i);
         if (var < 0) {
-            PointPos[i].x = pins[-var-1];
-            PointPos[i].y = pins[-var];
+            PointPos[i].x = pins[2 * (-var - 1)];
+            PointPos[i].y = pins[2 * (-var - 1) + 1];
             PointPos[i].z = 0.0f;
         } else {
             PointPos[i].x = solution[2 * var];
