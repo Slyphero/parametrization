@@ -20,7 +20,9 @@ GLuint vao = 0;
 unsigned count = 0;
 std::string assetsPath = "projets/parameterization-etu/assets/";
 
-float zoomFactor = -2.;
+float zoomFactor = -2.0f;
+float offset_x = 0.0f;
+float offset_y = 0.0f;
 
 GLuint texture;
 
@@ -66,7 +68,7 @@ void quit() {
 void draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Transform model;                                // placer le modele
-    Transform view = Translation(0, 0, zoomFactor); // camera
+    Transform view = Translation(offset_x, offset_y, zoomFactor); // camera
     Transform projection = Perspective(45, 1024.0 / 576.0, 0.1, 100);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     draw(vao, GL_TRIANGLES, count, model, view, projection);
@@ -99,9 +101,17 @@ int main(int argc, char **argv) {
             } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 close = true; // sortir si la touche esc / echapp est enfoncee
             } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_UP) {
-                zoomFactor += 0.1;
+                offset_y -= 0.1f;
             } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_DOWN) {
-                zoomFactor -= 0.1;
+                offset_y += 0.1f;
+            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RIGHT) {
+                offset_x -= 0.1f;
+            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_LEFT) {
+                offset_x += 0.1f;
+            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE) {
+                zoomFactor += 0.1f;
+            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_BACKSPACE) {
+                zoomFactor -= 0.1f;
             }
         }
 

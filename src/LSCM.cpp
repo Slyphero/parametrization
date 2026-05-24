@@ -5,20 +5,21 @@
 void LSCM::selectFixPoints(const MeshIOData &data) {
     double max_y = data.positions[0].y;
     double min_y = data.positions[0].y;
+    lowy = 0;
+    highy = 0;
 
     for (int i = 0; i < data.positions.size(); ++i) {
         if (data.positions[i].y < min_y) {
             min_y = data.positions[i].y;
-            lowy = data.indices[i];
+            lowy = i;
         } else if (data.positions[i].y > max_y) {
             max_y = data.positions[i].y;
-            highy = data.indices[i];
+            highy = i;
         }
     }
 }
 
-int LSCM::variable_index(int i)
-{
+int LSCM::variable_index(int i) {
     if (i == lowy) {
         return -1 ;
     }
@@ -62,13 +63,9 @@ void LSCM::solveLSCM(const MeshIOData &data) {
         };
 
         // Construire la base locale
-        Vector e0 = trianglePositions[1] - trianglePositions[0];
-        e0 = normalize(e0);
-
+        Vector e0 = normalize(trianglePositions[1] - trianglePositions[0]);
         Vector e2 = cross(e0, trianglePositions[2] - trianglePositions[0]);
-
-        Vector e1 = cross(e2, e0);
-        e1 = normalize(e1);
+        Vector e1 = normalize(cross(e2, e0));
 
         // 2 * aire triangle
         float dt = std::sqrt(length(cross(
@@ -79,7 +76,7 @@ void LSCM::solveLSCM(const MeshIOData &data) {
         // Coordonnées locales
         std::vector<float> px, py;
 
-        for (Point pp : trianglePositions ) {
+        for (Point pp : trianglePositions) {
             px.push_back(dot( (pp - trianglePositions[0]), e0) );
             py.push_back(dot( (pp - trianglePositions[0]), e1) );
         }
@@ -106,16 +103,13 @@ void LSCM::solveLSCM(const MeshIOData &data) {
     }
 
     Eigen::VectorXf pins(4);
-    pins[0] = 0.5;
-    pins[1] = 0.8;
-    pins[2] = 0.5;
-    pins[3] = 0.2;
+    pins[0] = 0.5f;
+    pins[1] = 0.8f;
+    pins[2] = 0.5f;
+    pins[3] = 0.2f;
 
-    Eigen::SparseMatrix<float> lsqSystem( 2 * (verticesCount - 2), 2 * (verticesCount - 2) );
-    lsqSystem = system.transpose() * system;
-
-    Eigen::VectorXf lsqRhs(2 * (verticesCount - 2));
-    lsqRhs = system.transpose() * rhsGenerator * pins;
+    Eigen::SparseMatrix<float> lsqSystem = system.transpose() * system;
+    Eigen::VectorXf lsqRhs = system.transpose() * rhsGenerator * pins;
 
     Eigen::VectorXf solution(2 * (verticesCount - 2));
     Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<float>> solver;
