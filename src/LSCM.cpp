@@ -43,7 +43,10 @@ void LSCM::solveLSCM(const MeshIOData &data) {
     int verticesCount = data.positions.size();
 
     Eigen::SparseMatrix<float> system( 2 * facesCount, 2 * (verticesCount - 2) );
+    std::vector<Eigen::Triplet<float>> systemTriplets;
+
     Eigen::SparseMatrix<float> rhsGenerator( 2 * facesCount, 4 );
+    std::vector<Eigen::Triplet<float>> rhsGeneratorTriplets;
 
     // Parcourir toutes les faces (triangles)
     for (unsigned int i = 0; i < data.indices.size() - 2; i += 3) {
@@ -89,15 +92,15 @@ void LSCM::solveLSCM(const MeshIOData &data) {
             int var_index = variable_index(triangleIndexes[j]);
 
             if (var_index < 0) {
-                rhsGenerator.coeffRef(2 * faceId, 2 * (-var_index - 1)) = -day;
-                rhsGenerator.coeffRef(2 * faceId, 2 * (-var_index - 1) + 1) = -dax;
-                rhsGenerator.coeffRef(2 * faceId + 1, 2 * (-var_index - 1)) = dax;
-                rhsGenerator.coeffRef(2 * faceId + 1, 2 * (-var_index - 1) + 1) = -day;
+                rhsGeneratorTriplets.emplace_back(2 * faceId, 2 * (-var_index - 1), -day);
+                rhsGeneratorTriplets.emplace_back(2 * faceId, 2 * (-var_index - 1) + 1, -dax);
+                rhsGeneratorTriplets.emplace_back(2 * faceId + 1, 2 * (-var_index - 1), dax);
+                rhsGeneratorTriplets.emplace_back(2 * faceId + 1, 2 * (-var_index - 1) + 1, -day);
             } else {
-                system.coeffRef(2 * faceId, 2 * var_index) = day;
-                system.coeffRef(2 * faceId, 2 * var_index + 1) = dax;
-                system.coeffRef(2 * faceId + 1, 2 * var_index) = -dax;
-                system.coeffRef(2 * faceId + 1, 2 * var_index + 1) = day;
+                systemTriplets.emplace_back(2 * faceId, 2 * var_index, day);
+                systemTriplets.emplace_back(2 * faceId, 2 * var_index + 1, dax);
+                systemTriplets.emplace_back(2 * faceId + 1, 2 * var_index, -dax);
+                systemTriplets.emplace_back(2 * faceId + 1, 2 * var_index + 1, day);
             }
         }
     }
@@ -108,7 +111,10 @@ void LSCM::solveLSCM(const MeshIOData &data) {
     pins[2] = 1.0f;
     pins[3] = 1.0f;
 
+    system.setFromTriplets(systemTriplets.begin(), systemTriplets.end());
     Eigen::SparseMatrix<float> lsqSystem = system.transpose() * system;
+
+    rhsGenerator.setFromTriplets(rhsGeneratorTriplets.begin(), rhsGeneratorTriplets.end());
     Eigen::VectorXf lsqRhs = system.transpose() * rhsGenerator * pins;
 
     Eigen::VectorXf solution(2 * (verticesCount - 2));
