@@ -9,8 +9,7 @@
 #include "mesh_io.h"
 #include "typedefs.h"
 
-class Tutte
-{
+class Tutte {
 public:
     std::set<edge> cutEdgeSet;
     std::set<edge> notCutEdgeSet;

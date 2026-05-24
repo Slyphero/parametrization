@@ -2,19 +2,15 @@
 
 #include <iterator>
 
-void LSCM::selectFixPoints(const MeshIOData &data)
-{
-    double max_y, min_y;
+void LSCM::selectFixPoints(const MeshIOData &data) {
+    double max_y = std::numeric_limits<double>::min();
+    double min_y = std::numeric_limits<double>::max();
 
-    for (int i = 0; i < data.positions.size(); ++i)
-    {
-        if (data.positions[i].y < min_y)
-        {
+    for (int i = 0; i < data.positions.size(); ++i) {
+        if (data.positions[i].y < min_y) {
             min_y = data.positions[i].y;
             lowy = data.indices[i];
-        }
-        else if (data.positions[i].y > max_y)
-        {
+        } else if (data.positions[i].y > max_y) {
             max_y = data.positions[i].y;
             highy = data.indices[i];
         }
@@ -23,29 +19,25 @@ void LSCM::selectFixPoints(const MeshIOData &data)
 
 int LSCM::variable_index(int i)
 {
-    if (i == lowy)
-    {
+    if (i == lowy) {
         return -1 ;
     }
-    if (i == highy)
-    {
+    if (i == highy) {
         return -2 ;
     }
 
     int res = i ;
-    if (i > lowy)
-    {
-        res -= 1;
+    if (i > lowy) {
+        res--;
     }
-    if (i < highy)
-    {
-        res -= -1;
+    if (i > highy) {
+        res--;
     }
+
     return res;
 }
 
-void LSCM::solveLSCM(const MeshIOData &data)
-{
+void LSCM::solveLSCM(const MeshIOData &data) {
     int facesCount = data.indices.size() / 3;
     int verticesCount = data.positions.size();
 
@@ -53,20 +45,20 @@ void LSCM::solveLSCM(const MeshIOData &data)
     Eigen::SparseMatrix<float> rhsGenerator( 2 * facesCount, 4 );
 
     // Parcourir toutes les faces (triangles)
-    for (unsigned int i = 0; i < data.indices.size() - 2; i += 3)
-    {
+    for (unsigned int i = 0; i < data.indices.size() - 2; i += 3) {
+        int faceId = i / 3;
         // Obtenir les sommets (indices) du triangle étudié
         unsigned int triangleIndexes[3] = {
-            data.indices[i],
-            data.indices[i + 1],
-            data.indices[i + 2]
+                data.indices[i],
+                data.indices[i + 1],
+                data.indices[i + 2]
         };
 
         // Récupérer les positions associées à chaque indice
         Point trianglePositions[3] = {
-            data.positions[triangleIndexes[0]],
-            data.positions[triangleIndexes[1]],
-            data.positions[triangleIndexes[2]]
+                data.positions[triangleIndexes[0]],
+                data.positions[triangleIndexes[1]],
+                data.positions[triangleIndexes[2]]
         };
 
         // Construire la base locale
@@ -80,23 +72,36 @@ void LSCM::solveLSCM(const MeshIOData &data)
 
         // 2 * aire triangle
         float dt = std::sqrt(length(cross(
-            trianglePositions[1] - trianglePositions[0],
-            trianglePositions[2] - trianglePositions[0]
-            )));
+                trianglePositions[1] - trianglePositions[0],
+                trianglePositions[2] - trianglePositions[0]
+        )));
 
         // Coordonnées locales
-
         std::vector<float> px, py;
 
         for (Point pp : trianglePositions ) {
-            px.push_back(dot((pp - trianglePositions[0]),e0));
-            py.push_back(dot((pp - trianglePositions[0]),e1));
+            px.push_back(dot( (pp - trianglePositions[0]), e0) );
+            py.push_back(dot( (pp - trianglePositions[0]), e1) );
         }
 
         // Construire système
-        for (int j = 0; j < 3; ++j)
-        {
+        for (int j = 0; j < 3; ++j) {
+            float dax = static_cast<float>( py[(j + 1) % 3] - py[(j + 2) % 3] ) / dt;
+            float day = static_cast<float>( px[(j + 2) % 3] - px[(j + 1) % 3] ) / dt;
 
+            int var_index = variable_index(triangleIndexes[j]);
+
+            if (var_index < 0) {
+                rhsGenerator.coeffRef(2 * faceId, 2 * (-var_index - 1)) = -day;
+                rhsGenerator.coeffRef(2 * faceId, 2 * (-var_index - 1) + 1) = -dax;
+                rhsGenerator.coeffRef(2 * faceId + 1, 2 * (-var_index - 1)) = dax;
+                rhsGenerator.coeffRef(2 * faceId + 1, 2 * (-var_index - 1) + 1) = -day;
+            } else {
+                system.coeffRef(2 * faceId, 2 * var_index) = day;
+                system.coeffRef(2 * faceId, 2 * var_index + 1) = dax;
+                system.coeffRef(2 * faceId + 1, 2 * var_index) = -dax;
+                system.coeffRef(2 * faceId + 1, 2 * var_index + 1) = day;
+            }
         }
     }
 
@@ -107,10 +112,20 @@ void LSCM::solveLSCM(const MeshIOData &data)
     pins[3] = 0.2;
 
     Eigen::SparseMatrix<float> lsqSystem( 2 * (verticesCount - 2), 2 * (verticesCount - 2) );
+    lsqSystem = system.transpose() * system;
+
     Eigen::VectorXf lsqRhs(2 * (verticesCount - 2));
+    lsqRhs = system.transpose() * rhsGenerator * pins;
 
     Eigen::VectorXf solution(2 * (verticesCount - 2));
     Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<float>> solver;
     solver.compute(lsqSystem);
     solution = solver.solve(lsqRhs);
+
+    PointPos.resize(2 * (verticesCount - 2));
+
+    for (int i = 0; i < solution.size() / 2; ++i) {
+        PointPos[i].x = solution[2 * i];
+        PointPos[i].y = solution[2 * i + 1];
+    }
 }

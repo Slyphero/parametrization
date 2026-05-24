@@ -3,6 +3,7 @@
 #include <set>
 #include <map>
 #include <cmath>
+#include <algorithm>
 
 #include "mesh_io.h"
 #include "vec.h"
