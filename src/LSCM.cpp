@@ -103,10 +103,10 @@ void LSCM::solveLSCM(const MeshIOData &data) {
     }
 
     Eigen::VectorXf pins(4);
-    pins[0] = 0.5f;
-    pins[1] = 0.8f;
-    pins[2] = 0.5f;
-    pins[3] = 0.2f;
+    pins[0] = 0.0f;
+    pins[1] = 0.0f;
+    pins[2] = 1.0f;
+    pins[3] = 1.0f;
 
     Eigen::SparseMatrix<float> lsqSystem = system.transpose() * system;
     Eigen::VectorXf lsqRhs = system.transpose() * rhsGenerator * pins;
