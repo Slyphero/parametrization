@@ -122,10 +122,18 @@ void LSCM::solveLSCM(const MeshIOData &data) {
     solver.compute(lsqSystem);
     solution = solver.solve(lsqRhs);
 
-    PointPos.resize(2 * (verticesCount - 2));
+    PointPos.resize(verticesCount);
 
-    for (int i = 0; i < solution.size() / 2; ++i) {
-        PointPos[i].x = solution[2 * i];
-        PointPos[i].y = solution[2 * i + 1];
+    for (int i = 0; i < verticesCount; ++i) {
+        int var = variable_index(i);
+        if (var < 0) {
+            PointPos[i].x = pins[-var-1];
+            PointPos[i].y = pins[-var];
+            PointPos[i].z = 0.0f;
+        } else {
+            PointPos[i].x = solution[2 * var];
+            PointPos[i].y = solution[2 * var + 1];
+            PointPos[i].z = 0.0f;
+        }
     }
 }
