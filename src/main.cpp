@@ -23,7 +23,7 @@ GLuint lscmVao = 0;
 unsigned count = 0;
 std::string assetsPath = "projets/parameterization-etu/assets/";
 
-float zoomFactor = -2.0f;
+float zoomFactor = -3.0f;
 float offset_x = 0.0f;
 float offset_y = 0.0f;
 
@@ -61,11 +61,14 @@ bool init() {
      */
     count = data.indices.size();
 
-    std::cout << "Deplacement : Fleches directionnelles" << std::endl
+    std::cout << std::endl 
+            << "================================" << std::endl
+            << "Deplacement : Fleches directionnelles" << std::endl
             << "Zoom : Espace / Backspace" << std::endl
             << "Parametrisation de Tutte : T" << std::endl
             << "Parametrisation LSCM : L" << std::endl
-            << "Affichage Suzanne par defaut : R" << std::endl;
+            << "Affichage Suzanne par defaut : R" << std::endl
+            << "================================" << std::endl << std::endl;
 
     return true;
 }
@@ -130,12 +133,21 @@ int main(int argc, char **argv) {
             } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_r) {
                 isTutte = false;
                 isLscm = false;
+                zoomFactor = -3.0f;
+                offset_x = 0.0f;
+                offset_y = 0.0f;
             } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_t) {
                 isTutte = true;
                 isLscm = false;
+                zoomFactor = -3.0f;
+                offset_x = 0.0f;
+                offset_y = 0.0f;
             } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_l) {
                 isTutte = false;
                 isLscm = true;
+                zoomFactor = -3.0f;
+                offset_x = -0.65f;
+                offset_y = -0.65f;
             }
         }
 
