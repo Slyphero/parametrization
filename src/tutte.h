@@ -14,9 +14,12 @@ public:
     std::set<edge> cutEdgeSet;
     std::set<edge> notCutEdgeSet;
     std::map<unsigned int, unsigned int> cutEdgeMap;
-    std::vector<Point> edgePointPos;
 
-    std::map<unsigned int, unsigned int> systemsLinesIndicesMap;
+    // Initialement ne contient que les points du bord puis tous les points
+    std::vector<Point> edgePointPos; 
+
+    // Ne contient que les indices associés aux sommets à l'intérieur du cercle
+    std::map<unsigned int, unsigned int> systemsLinesIndicesMap; 
 
     Tutte() = default;
     Tutte(const Tutte &) = delete;
