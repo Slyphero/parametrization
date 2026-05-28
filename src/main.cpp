@@ -16,7 +16,10 @@
 #include "vec.h"
 #include "window.h"
 
-GLuint vao = 0;
+GLuint defaultVao = 0;
+GLuint tutteVao = 0;
+GLuint lscmVao = 0;
+
 unsigned count = 0;
 std::string assetsPath = "projets/parameterization-etu/assets/";
 
@@ -34,11 +37,9 @@ bool init() {
 
     texture = read_texture(0, (assetsPath + "blender_checker.png").c_str());
 
-    if (!read_meshio_data((assetsPath + "suzanne_uvsplit.obj").c_str(), data)) {
-        return false; // erreur de lecture
-    }
-    default_texture(0, texture);
+    if (!read_meshio_data((assetsPath + "suzanne_uvsplit.obj").c_str(), data)) { return false; }
 
+    default_texture(0, texture);
 
     tutte.buildEdgeSet(data);
     tutte.buildEdgeMap();
@@ -47,16 +48,11 @@ bool init() {
 
     lscm.selectFixPoints(data);
     lscm.solveLSCM(data);
-    
-    bool isTutte = true;
 
-    // vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
+    defaultVao = create_buffers(data.positions, data.indices, data.positions, data.normals);
+    tutteVao = create_buffers(tutte.edgePointPos, data.indices);
+    lscmVao = create_buffers(lscm.PointPos, data.indices);
     
-    if (isTutte) {
-        vao = create_buffers(tutte.edgePointPos, data.indices);
-    } else {
-        vao = create_buffers(lscm.PointPos, data.indices);
-    }
     /* ou
         vao= create_buffers(data.positions, data.indices, data.texcoords,
        data.normals); mais s'il y a des coordonn�es de textures dans l'objet, il
@@ -65,20 +61,31 @@ bool init() {
      */
     count = data.indices.size();
 
+    std::cout << "Deplacement : Fleches directionnelles" << std::endl
+            << "Zoom : Espace / Backspace" << std::endl
+            << "Parametrisation de Tutte : T" << std::endl
+            << "Parametrisation LSCM : L" << std::endl
+            << "Affichage Suzanne par defaut : R" << std::endl;
+
     return true;
 }
 
 void quit() { 
-    release_buffers(vao); 
+    release_buffers(defaultVao); 
+    release_buffers(tutteVao); 
+    release_buffers(lscmVao); 
 }
 
-void draw() {
+void draw(bool isParam, const GLuint& myVao) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Transform model;                                // placer le modele
     Transform view = Translation(offset_x, offset_y, zoomFactor); // camera
     Transform projection = Perspective(45, 1024.0 / 576.0, 0.1, 100);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    draw(vao, GL_TRIANGLES, count, model, view, projection);
+
+    if (isParam) { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
+    else { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
+
+    draw(myVao, GL_TRIANGLES, count, model, view, projection);
 }
 
 int main(int argc, char **argv) {
@@ -92,11 +99,12 @@ int main(int argc, char **argv) {
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
 
-    if (!init()) {
-        return 1;
-    }
+    if (!init()) { return 1; }
 
     bool close = false;
+    bool isTutte = false;
+    bool isLscm = false;
+
     while (!close) {
         SDL_Event event;
 
@@ -119,11 +127,22 @@ int main(int argc, char **argv) {
                 zoomFactor += 0.1f;
             } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_BACKSPACE) {
                 zoomFactor -= 0.1f;
+            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_r) {
+                isTutte = false;
+                isLscm = false;
+            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_t) {
+                isTutte = true;
+                isLscm = false;
+            } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_l) {
+                isTutte = false;
+                isLscm = true;
             }
         }
 
         // dessiner
-        draw();
+        if (isTutte) { draw(true, tutteVao); }
+        else if (isLscm) { draw(true, lscmVao); }
+        else { draw(false, defaultVao); }
 
         // presenter / montrer le resultat
         SDL_GL_SwapWindow(window);
