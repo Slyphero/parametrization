@@ -39,17 +39,24 @@ bool init() {
     }
     default_texture(0, texture);
 
-    // tutte.buildEdgeSet(data);
-    // tutte.buildEdgeMap();
-    // tutte.buildEdgePos(data);
-    // tutte.buildInsidePos(data);
+
+    tutte.buildEdgeSet(data);
+    tutte.buildEdgeMap();
+    tutte.buildEdgePos(data);
+    tutte.buildInsidePos(data);
 
     lscm.selectFixPoints(data);
     lscm.solveLSCM(data);
     
+    bool isTutte = true;
+
     // vao = create_buffers(data.positions, data.indices, data.positions, data.normals);
-    // vao = create_buffers(tutte.edgePointPos, data.indices);'
-    vao = create_buffers(lscm.PointPos, data.indices);
+    
+    if (isTutte) {
+        vao = create_buffers(tutte.edgePointPos, data.indices);
+    } else {
+        vao = create_buffers(lscm.PointPos, data.indices);
+    }
     /* ou
         vao= create_buffers(data.positions, data.indices, data.texcoords,
        data.normals); mais s'il y a des coordonn�es de textures dans l'objet, il
