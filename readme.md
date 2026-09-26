@@ -9,7 +9,7 @@
 * Il faut d'abord cloner `https://forge.univ-lyon1.fr/JEAN-CLAUDE.IEHL/gkit3`
 * Se rendre dans le dossier puis cloner `https://forge.univ-lyon1.fr/JEAN-CLAUDE.IEHL/gkit3GL.git` 
 * Modifier le fichier `gkit3GL/premake5.lua` de la manière suivante :
-```
+```lua
 dofile "GL.lua"
 
 project("parametrization")
