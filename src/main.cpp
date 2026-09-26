@@ -21,7 +21,7 @@ GLuint tutteVao = 0;
 GLuint lscmVao = 0;
 
 unsigned count = 0;
-std::string assetsPath = "projets/parameterization-etu/assets/";
+std::string assetsPath = "projets/parametrization/assets/";
 
 float zoomFactor = -3.0f;
 float offset_x = 0.0f;
