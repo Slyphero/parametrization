@@ -21,5 +21,6 @@ project("parametrization")
   includedirs { ".", "../src", "src", "projets/parametrization/third_party" }
   files { "projets/parametrization/src/*.cpp", "projets/parametrization/src/*.h" }
 ```
+* Il faut cloner ce projet dans le dossier `gkit3/gkit3GL/projets/` 
 * Pour build le projet il suffit de se rendre dans le répertoire `gkit3/gkit3GL` puis `premake5 gmake` pour utiliser make puis faire `make parametrization` puis `./bin/parametrization`
 * Les commandes clavier sont indiquées dans la console.
